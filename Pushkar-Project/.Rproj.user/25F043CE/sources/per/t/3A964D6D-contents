@@ -1,0 +1,25 @@
+library(DMwR)
+
+df <- read.csv("C:\\Users\\riddh\\OneDrive\\Documents\\Projects\\Pushkar-Project\\Regression_Project\\Regression_Project\\Balance_OpenEnded.csv",sep = ",", header = T, na.strings = c("-")) #importing csv and replacing missing values with NA
+
+#factor to numeric using nested conversion (for regression)
+for (i in 2:11){
+  if(class(df[,i]) != "numeric")
+  {
+    df[,i] <- as.numeric(as.character(df[,i]))
+  }
+}
+
+#missing value analysis
+ds_missingVal = data.frame(apply(df,2,function(x){sum(is.na(x))}))
+ds_missingVal$Columns = row.names(ds_missingVal)
+names(ds_missingVal)[1] =  "Missing_percentage"
+ds_missingVal$Missing_percentage = (ds_missingVal$Missing_percentage/nrow(df)) * 100
+ds_missingVal = ds_missingVal[order(-ds_missingVal$Missing_percentage),]
+row.names(ds_missingVal) = NULL
+ds_missingVal = ds_missingVal[,c(2,1)]
+write.csv(ds_missingVal, "Missing_perc.csv", row.names = F)
+
+#imputation using KNN since missing value is less than 35%
+df_vis <- df[,2:11]
+df_vis = knnImputation(df_vis, k = 3)
